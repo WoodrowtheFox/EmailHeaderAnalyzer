@@ -2,56 +2,57 @@ import urllib.request
 import json
 
 def readfile(filename):
-    data = {}
-    file = open(filename, "r");
+    email_data = {};
+    textfile = open(filename, "r");
     i = 0;
-    for line in file:
+    for line in textfile:
         currline = line.split();
-        currline = [word.replace("(", "") for word in currline]
-        currline = [word.replace(")", "") for word in currline]
-        currline = [word.replace("[", "") for word in currline]
-        currline = [word.replace("]", "") for word in currline]
-        currline = [word.replace(",", "") for word in currline]
-        data[i] = currline;
+        currline = [word.replace("(", "") for word in currline];
+        currline = [word.replace(")", "") for word in currline];
+        currline = [word.replace("[", "") for word in currline];
+        currline = [word.replace("]", "") for word in currline];
+        currline = [word.replace(",", "") for word in currline];
+        email_data[i] = currline;
         i += 1;
-    data[i] = "THE FILE IS OVER NOW"
-    file.close();
-    return data;
+    email_data[i] = "THE FILE IS OVER NOW";
+    textfile.close();
+    return email_data;
 
 def extractdetails(datafromfile):
-    values = {}
+    email_values = {}
     i = 0;
     while(datafromfile.get(i) != "THE FILE IS OVER NOW"):
-        list = datafromfile.get(i);
-        if(values.get("Server")):
-            values["IP"] = list[list.index(values.get("Server")) + 1]
-        if("from" in list):
-            values["Server"] = list[list.index("from") + 1] + "."
-        if("by" in list):
-            values["Destination"] = list[list.index("by") + 1]
-        if("with" in list):
-            values["Protocol"] = list[list.index("with") + 1]
-        if(("Mon" in list) or ("Tue" in list) or ("Wed" in list) or ("Thu" in list) or ("Fri" in list) or ("Sat" in list) or ("Sun" in list)):
-            days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        currlist = datafromfile.get(i);
+        if(email_values.get("Server") in currlist):
+            email_values["IP"] = currlist[currlist.index(email_values.get("Server")) + 1];
+        if("from" in currlist):
+            email_values["Server"] = currlist[currlist.index("from") + 1] + ".";
+        if("by" in currlist):
+            email_values["Destination"] = currlist[currlist.index("by") + 1];
+        if("with" in currlist):
+            email_values["Protocol"] = currlist[currlist.index("with") + 1];
+        if(("Mon" in currlist) or ("Tue" in currlist) or ("Wed" in currlist) or ("Thu" in currlist) or ("Fri" in currlist) or ("Sat" in currlist) or ("Sun" in currlist)):
+            days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
             for day in days:
-                if(day in list):
-                    values["Timestamp"] = list[list.index(day)]+ " " + list[list.index(day) + 1] + " " + list[list.index(day) + 2] + " " + list[list.index(day) + 3] + " " + list[list.index(day) + 4]
+                if(day in currlist):
+                    email_values["Timestamp"] = currlist[currlist.index(day)]+ " " + currlist[currlist.index(day) + 1] + " " + currlist[currlist.index(day) + 2] + " " + currlist[currlist.index(day) + 3] + " " + currlist[currlist.index(day) + 4];
         i += 1;
-    return values;
+    return email_values;
 
 def check_ip(ip):
     url = f"http://ip-api.com/json/{ip}"
     with urllib.request.urlopen(url) as response:
-        return json.loads(response.read())
-
-    info = check_ip("8.8.8.8")
-    print(info["city"], info["country"], info["isp"])
+        return json.loads(response.read());
 
 def main():
-    val = input("Please enter the file with the email header:\n");
-    data = readfile(val);
-    values = extractdetails(data);
-    for key in values:
-        print(key + ": " + values.get(key) + "\n")
-    check_ip(values.get("IP"));
+    emailheader = input("Please enter the file with the email header:\n");
+    emaildata = readfile(emailheader);
+    email_values = extractdetails(emaildata);
+
+    for key in email_values:
+        print(key + ": " + email_values.get(key) + "\n");
+    
+    info = check_ip(email_values.get("IP"));
+    print("Location: " + info["city"], ", " + info["regionName"] + ", " + info["country"]);
+
 main();
